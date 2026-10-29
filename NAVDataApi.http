@@ -1,0 +1,60 @@
+@host = http://localhost:5225
+# Development key for dev-tester-1 (appsettings.Development.json)
+@apiKey = dev-3d71a21ba9ce4f36bf5f828b47671406
+
+### List all NAVs
+GET {{host}}/api/navs
+X-Api-Key: {{apiKey}}
+Accept: application/json
+
+### Filter by fund and date range
+GET {{host}}/api/navs?fundCode=GEF&from=2026-09-25&to=2026-09-30
+X-Api-Key: {{apiKey}}
+
+### Latest NAV per share class
+GET {{host}}/api/navs/latest
+X-Api-Key: {{apiKey}}
+
+### Get by id
+GET {{host}}/api/navs/1
+X-Api-Key: {{apiKey}}
+
+### Create
+POST {{host}}/api/navs
+X-Api-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "fundCode": "GEF",
+  "fundName": "Global Equity Fund",
+  "shareClass": "A Acc",
+  "isin": "ZZ0000000011",
+  "currency": "USD",
+  "navDate": "2026-10-01",
+  "navPerShare": 127.1034,
+  "sharesOutstanding": 1250000
+}
+
+### Update
+PUT {{host}}/api/navs/1
+X-Api-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "fundCode": "GEF",
+  "fundName": "Global Equity Fund",
+  "shareClass": "A Acc",
+  "isin": "ZZ0000000011",
+  "currency": "USD",
+  "navDate": "2026-09-17",
+  "navPerShare": 125.4312,
+  "sharesOutstanding": 1250000
+}
+
+### Reset your dataset to seed state
+POST {{host}}/api/admin/reset
+X-Api-Key: {{apiKey}}
+
+### Your dataset status
+GET {{host}}/api/admin/status
+X-Api-Key: {{apiKey}}

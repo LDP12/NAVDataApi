@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="A clear view of fund NAVs, share-class history and currency-specific valuations.">
+  <title>NAV / Fund reporting</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%2314293b'/%3E%3Cpath d='M10 28V12l20 16V12' stroke='%238bddd0' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.mjs"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to reporting</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" aria-label="NAV reporting home"><span class="brand-mark" aria-hidden="true">N<span>↗</span></span><span>NAV<span class="brand-divider">/</span><span class="brand-sub">Fund reporting</span></span></a>
+      <span class="environment"><span class="dot" aria-hidden="true"></span>API workspace</span>
+    </div>
+  </header>
+  <main id="main" class="shell">
+    <section class="page-heading" aria-labelledby="page-title">
+      <div><p class="eyebrow">INVESTMENT OPERATIONS</p><h1 id="page-title">The value in view.</h1><p class="intro">Fund valuations, with every share class accounted for.</p></div>
+      <div class="heading-actions"><button id="refresh" class="button secondary" disabled><span aria-hidden="true">↻</span> Refresh</button><button id="new-record" class="button primary" disabled><span aria-hidden="true">＋</span> Add NAV</button></div>
+    </section>
+
+    <section class="connection panel" aria-labelledby="connection-title">
+      <div class="connection-copy"><span class="connection-icon" aria-hidden="true">⌁</span><div><h2 id="connection-title">Your data, your workspace</h2><p id="connection-description">Connect with an API key. It stays in this tab’s memory only.</p></div></div>
+      <form id="connect-form" class="connect-form" autocomplete="off">
+        <label class="sr-only" for="api-key">API key</label><input id="api-key" name="api-key" type="password" autocomplete="off" placeholder="Enter your API key" required aria-describedby="connection-description">
+        <button id="connect" class="button primary" type="submit">Connect</button>
+      </form>
+      <div id="connected-controls" class="connected-controls" hidden><span class="connection-badge"><span class="dot" aria-hidden="true"></span>Connected</span><button id="disconnect" class="button quiet">Disconnect</button></div>
+    </section>
+
+    <section class="filter-panel panel" aria-labelledby="filter-title">
+      <div class="section-top compact"><h2 id="filter-title">Report scope</h2><button id="clear-filters" class="text-button" disabled>Clear filters</button></div>
+      <fieldset id="filters" disabled><legend class="sr-only">Filter NAV observations</legend>
+        <div class="filter-grid">
+          <label>Fund<select id="fund-filter"><option value="">All funds</option></select></label>
+          <label>Currency<select id="currency-filter"><option value="">All currencies</option></select></label>
+          <label>ISIN search<input id="isin-filter" type="search" placeholder="Full or partial ISIN" autocomplete="off"></label>
+          <label>From date<input id="from-filter" type="date"></label>
+          <label>To date<input id="to-filter" type="date"></label>
+        </div>
+      </fieldset>
+      <p id="filter-error" class="field-error" role="alert" hidden></p>
+    </section>
+
+    <div class="scope-line"><p id="scope-label">Connect to explore your NAV data</p><p id="updated-at">No data loaded</p></div>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <section id="welcome" class="welcome panel" aria-labelledby="welcome-title">
+      <div class="welcome-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <p class="eyebrow">A CLEARER PICTURE</p><h2 id="welcome-title">A complete view starts with a connection.</h2><p>Explore valuations by currency, follow individual share classes,<br class="desktop-break"> and export the observations behind the numbers.</p>
+      <div class="welcome-features"><span>01 <b>Scope your data</b></span><span>02 <b>Follow the history</b></span><span>03 <b>Report with precision</b></span></div>
+    </section>
+
+    <div id="report" hidden>
+      <section aria-labelledby="valuation-title">
+        <div class="section-top"><div><h2 id="valuation-title">Valuation snapshot</h2><p>Latest observation per ISIN within your filters. Currencies are never combined.</p></div><div id="counts" class="counts"></div></div>
+        <div id="valuations" class="valuation-grid"></div>
+      </section>
+      <section class="analysis-grid" aria-label="Share-class analysis">
+        <div class="chart-panel panel">
+          <div class="section-top"><div><p class="eyebrow">THE DETAIL BEHIND THE VALUE</p><h2>NAV history</h2></div><label class="chart-select-label">Share class<select id="trend-class"></select></label></div>
+          <div class="chart-meta"><span id="chart-unit"></span><span class="legend"><span aria-hidden="true"></span>Observed NAV</span></div>
+          <div id="chart" class="chart"></div>
+          <p id="trend-summary" class="trend-summary"></p>
+          <details class="chart-data"><summary>Read chart observations</summary><ul id="trend-observations"></ul></details>
+          <p class="chart-footnote">Calendar-date spacing · no missing values filled · NAV movement is not total return</p>
+        </div>
+        <aside class="insight-panel" aria-labelledby="class-title">
+          <p class="eyebrow">SELECTED SHARE CLASS</p><h2 id="class-title">—</h2><p id="class-identity"></p>
+          <div class="insight-value"><span>Latest NAV / share</span><strong id="class-nav">—</strong><span id="class-date"></span></div>
+          <div class="insight-rule"></div><h3>A snapshot, not a running total.</h3><p>Valuations use each class’s latest eligible observation, even in history view. Dates can differ between classes.</p><p class="insight-small">No foreign-exchange conversion or historical double-counting.</p>
+        </aside>
+      </section>
+      <section class="records-panel panel" aria-labelledby="records-title">
+        <div class="section-top records-heading"><div><h2 id="records-title">NAV observations</h2><p id="table-description"></p></div><div class="table-actions"><div class="segmented" role="group" aria-label="Observation view"><button id="latest-view" aria-pressed="true">Latest per class</button><button id="history-view" aria-pressed="false">History</button></div><button id="export" class="button secondary"><span aria-hidden="true">↓</span> Export CSV</button></div></div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="NAV observations, scroll horizontally for more columns">
+          <table><caption class="sr-only">Filtered NAV observations. Dates are YYYY-MM-DD. Monetary columns use each row’s currency.</caption><thead><tr>
+            <th scope="col" aria-sort="none"><button data-sort="fundCode">Fund <span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="none"><button data-sort="shareClass">Share class <span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="none"><button data-sort="isin">ISIN <span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="none"><button data-sort="currency">Currency <span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="descending"><button data-sort="navDate">NAV date <span aria-hidden="true">↓</span></button></th>
+            <th scope="col" class="numeric" aria-sort="none"><button data-sort="navPerShare">NAV / share <span aria-hidden="true">↕</span></button></th>
+            <th scope="col" class="numeric" aria-sort="none"><button data-sort="sharesOutstanding">Shares outstanding <span aria-hidden="true">↕</span></button></th>
+            <th scope="col" class="numeric" aria-sort="none"><button data-sort="totalNetAssets">Net assets <span aria-hidden="true">↕</span></button></th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr></thead><tbody id="records-body"></tbody></table>
+        </div>
+        <div id="empty-results" class="empty-results" hidden><h3>No observations match this scope.</h3><p>Broaden the dates or clear your filters to see more data.</p></div>
+        <div class="table-footer"><span id="table-count"></span><span>Dates: YYYY-MM-DD · NAV: currency/share · net assets: row currency</span></div>
+      </section>
+    </div>
+    <footer class="page-footer"><span><b>NAV /</b> Clarity in every observation.</span><details><summary>Precision & reporting notes</summary><p>NAV and share quantities show at least four decimal places; all additional API precision is retained. Net assets use the API’s two-decimal, rounded valuation. Currency snapshots sum those values exactly and may span different observation dates. The graph uses approximate coordinates only; its text and the table preserve exact values.</p><p>CSV exports the current table view with original decimal tokens. All cells are quoted; formula-like values (including after whitespace) are prefixed with an apostrophe. Import decimal columns as text in spreadsheets to avoid their numeric precision limits. API keys are never written to browser storage. Disconnect clears this page’s data; previously downloaded exports remain on your device.</p></details></footer>
+  </main>
+
+  <dialog id="record-dialog" aria-labelledby="editor-title" aria-describedby="editor-description">
+    <form id="record-form" novalidate autocomplete="off">
+      <header class="dialog-header"><div><p class="eyebrow">NAV WORKSPACE</p><h2 id="editor-title">Add NAV observation</h2></div><button id="close-editor" type="button" class="icon-button" aria-label="Close editor">×</button></header>
+      <div class="dialog-content"><p id="editor-description">One record per ISIN and date. All fields are required; shares may be zero.</p>
+        <div id="save-error" class="notice error" role="alert" hidden></div>
+        <div class="editor-grid">
+          <label>Fund code<input name="fundCode" required minlength="2" maxlength="20" aria-describedby="error-fundCode"><span id="error-fundCode" class="field-error"></span></label>
+          <label>Share class<input name="shareClass" required maxlength="50" aria-describedby="error-shareClass"><span id="error-shareClass" class="field-error"></span></label>
+          <label class="full">Fund name<input name="fundName" required maxlength="200" aria-describedby="error-fundName"><span id="error-fundName" class="field-error"></span></label>
+          <label>ISIN<input name="isin" required maxlength="12" placeholder="ZZ0000000011" spellcheck="false" aria-describedby="error-isin"><span id="error-isin" class="field-error"></span></label>
+          <label>Currency<input name="currency" required maxlength="3" placeholder="USD" spellcheck="false" aria-describedby="error-currency"><span id="error-currency" class="field-error"></span></label>
+          <label class="full">NAV date<input name="navDate" type="date" required aria-describedby="error-navDate"><span id="error-navDate" class="field-error"></span></label>
+          <label>NAV per share<input name="navPerShare" type="text" inputmode="decimal" required placeholder="0.0000" aria-describedby="error-navPerShare"><span id="error-navPerShare" class="field-error"></span></label>
+          <label>Shares outstanding<input name="sharesOutstanding" type="text" inputmode="decimal" required placeholder="0" aria-describedby="error-sharesOutstanding"><span id="error-sharesOutstanding" class="field-error"></span></label>
+        </div><p class="editor-note">Use a dot for decimals, without thousands separators. Precision is sent exactly as entered. The server validates the record and calculates net assets.</p>
+      </div>
+      <footer class="dialog-footer"><button id="cancel-editor" type="button" class="button secondary">Cancel</button><button id="save-record" type="submit" class="button primary">Save observation</button></footer>
+    </form>
+  </dialog>
+  <noscript><p class="noscript">JavaScript is required to connect to the API and display this report. No data has been loaded.</p></noscript>
+</body>
+</html>

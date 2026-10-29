@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NAVDataApi.csproj" />
+  <Project Path="tests/NAVDataApi.Tests/NAVDataApi.Tests.csproj" />
+</Solution>
